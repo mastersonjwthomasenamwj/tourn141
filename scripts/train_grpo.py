@@ -59,6 +59,7 @@ class TrainingArguments(GRPOConfig):
     request_path: Optional[str] = field(default=None)
     use_liger: Optional[bool] = field(default=False)
     disable_fa: Optional[bool] = field(default=False)
+    use_cache: Optional[bool] = field(default=True)
 
 
 def find_all_linear_names(model):
@@ -349,7 +350,7 @@ def main():
         quantization_config=quantization_config,
     )
 
-    log_info(f"final training_args: {training_args}")
+    # log_info(f"final training_args: {training_args}")
 
     if training_args.use_liger:
         from liger_kernel.transformers import AutoLigerKernelForCausalLM
@@ -360,6 +361,13 @@ def main():
 
     model = model_class.from_pretrained(train_request["model_path"], **model_kwargs)
 
+    try:
+        if not training_args.use_cache:
+            log_info("---------------use_cache FALSE------------")
+            model.config.use_cache = False
+    except:
+        pass
+    
     # some model need to set the generation config or encounter the invalid generation config error
     set_generation_config(train_request["model_name"], model)
 
@@ -390,7 +398,14 @@ def main():
  
     if training_args.gradient_checkpointing:
         training_args.gradient_checkpointing_kwargs = {"use_reentrant": False}
-        
+
+    try:
+        if not training_args.use_cache:
+            log_info("---------------use_cache FALSE------------")
+            model.config.use_cache = False
+    except:
+        pass
+
     print("train_ds.column_names: ", train_ds.column_names)
     print("dev_ds.column_names: ", dev_ds.column_names)
 
@@ -406,6 +421,8 @@ def main():
 
     max_steps = train_request.get("max_steps", -1)
     log_info(f"max_steps: {max_steps}")
+
+    # log_info(f"final training_args: {training_args}")
 
     wrapped_reward_funcs = get_reward_funcs(train_request["dataset_type"])
     trainer = GRPOTrainer(

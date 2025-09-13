@@ -36,9 +36,10 @@ from core.models.utility_models import InstructTextDatasetType
 from core.models.utility_models import TaskType
 import training_paths as train_paths
 # from instruct_config import get_training_json as get_instruct_training_json
-from dpo_config import get_training_json as get_dpo_training_json
-from grpo_config import get_training_json as get_grpo_training_json
+# from dpo_config import get_training_json as get_dpo_training_json
+# from grpo_config import get_training_json as get_grpo_training_json
 import pathlib
+import pandas as pd
 
 
 
@@ -282,6 +283,16 @@ def main():
         os.makedirs(directory, exist_ok=True)
     try:
         dataset_type_dict = json.loads(args.dataset_type)
+        # print("dataset_type_dict: ", dataset_type_dict, flush=True)
+
+        # if isinstance(dataset_type_dict, dict):
+        #     df = pd.DataFrame([dataset_type_dict])  # wrap in a list
+        # else:
+        #     df = pd.DataFrame(dataset_type_dict)
+
+        # df = df.sample(n=min(1000, len(df)), random_state=42)
+        # dataset_type_dict = df.to_dict()
+
     except Exception as e:
         sys.exit(f"Error creating dataset type object: {e}")
 
@@ -382,24 +393,36 @@ def main():
 
         if config_level[cdx] == "default":
             from instruct_config_default import get_training_json as get_instruct_training_json
+            from dpo_config_default import get_training_json as get_dpo_training_json
+            from grpo_config_default import get_training_json as get_grpo_training_json
         elif config_level[cdx] == "cache":
             from instruct_config_cache import get_training_json as get_instruct_training_json
+            from dpo_config_cache import get_training_json as get_dpo_training_json
+            from grpo_config_cache import get_training_json as get_grpo_training_json
         elif config_level[cdx] == "flash":
             from instruct_config_flash import get_training_json as get_instruct_training_json
+            from dpo_config_flash import get_training_json as get_dpo_training_json
+            from grpo_config_flash import get_training_json as get_grpo_training_json
         elif config_level[cdx] == "tuple":
             from instruct_config_tuple import get_training_json as get_instruct_training_json
+            from dpo_config_tuple import get_training_json as get_dpo_training_json
+            from grpo_config_tuple import get_training_json as get_grpo_training_json
         elif config_level[cdx] == "float":
             from instruct_config_float import get_training_json as get_instruct_training_json
+            from dpo_config_float import get_training_json as get_dpo_training_json
+            from grpo_config_float import get_training_json as get_grpo_training_json
         elif config_level[cdx] == "low":
             from instruct_config_low import get_training_json as get_instruct_training_json
+            from dpo_config_low import get_training_json as get_dpo_training_json
+            from grpo_config_low import get_training_json as get_grpo_training_json
         else:
             from instruct_config import get_training_json as get_instruct_training_json
+            from dpo_config import get_training_json as get_dpo_training_json
+            from grpo_config import get_training_json as get_grpo_training_json
 
         if args.task_type == TaskType.INSTRUCTTEXTTASK.value:
             train_info = get_instruct_training_json(train_info)
-            tokenize_cmd = (
-                f"/workspace/axo_py/bin/python tokenize_instruct.py {request_path}"
-            )
+            tokenize_cmd = f"/workspace/axo_py/bin/python tokenize_instruct.py {request_path}"
             train_cmd = train_info["run_cmd"]
 
         elif args.task_type == TaskType.DPOTASK.value:
@@ -411,6 +434,7 @@ def main():
             train_info = get_grpo_training_json(train_info)
             tokenize_cmd = f"python tokenize_grpo.py {request_path}"
             train_cmd = train_info["run_cmd"]
+
         else:
             raise ValueError(f"Task type {args.task_type} not supported")
 
@@ -630,6 +654,9 @@ def main():
             # print(f"Training successfully done for task {args.task_id}", flush=True)
             # sub_train_success = True
             # # break
+
+            sub_train_success = True
+            train_success = True
 
 
     if not train_success:

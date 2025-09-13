@@ -291,6 +291,8 @@ def main():
     max_steps = train_request.get("max_steps", -1)
     log_info(f"max_steps: {max_steps}")
     
+    # log_info(f"final training_args: {training_args}")
+
     trainer = Trainer(
         model=model,
         tokenizer=tokenizer,
