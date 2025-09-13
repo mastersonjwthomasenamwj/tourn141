@@ -85,7 +85,7 @@ class CustomEvalSaveCallback(TrainerCallback):
 
                 if losses:
                     avg_loss = sum(losses) / len(losses)
-                    print("Average loss:", avg_loss)
+                    print("\nAverage loss:", avg_loss)
 
                     # control.should_evaluate = False
                     # control.should_save = True
